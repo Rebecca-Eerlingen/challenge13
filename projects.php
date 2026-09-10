@@ -182,8 +182,24 @@
           ";
 
 
-if (!$conn->query($createProjectsTable)) {
-    die("Fout bij maken tb_projects: " . $conn->error);
+      if (!$conn->query($createProjectsTable)) {
+          die("Fout bij maken tb_projects: " . $conn->error);
+      }
+
+      $createImagesTable = "
+        CREATE TABLE IF NOT EXISTS tb_projectimages (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            project_uuid VARCHAR(36) NOT NULL,
+            image_path VARCHAR(500),
+
+            FOREIGN KEY (project_uuid)
+            REFERENCES tb_projects(uuid)
+            ON DELETE CASCADE
+        ) ENGINE=InnoDB
+        ";
+
+if (!$conn->query($createImagesTable)) {
+    die("Fout bij maken tb_projectimages: " . $conn->error);
 }
        
 
@@ -216,7 +232,7 @@ if (!$conn->query($createProjectsTable)) {
             $stmt->execute();
             $result = $stmt->get_result();
             if ($result->num_rows === 0) {
-                return "<img src='images/projects/default.png' alt='Default Project Image' style='max-width:200px; height:auto;'>";
+                return "<img src='hoi.jpg' alt='Default Project Image' style='max-width:200px; height:auto;'>";
             }
             $stmt->close();
 
@@ -224,7 +240,7 @@ if (!$conn->query($createProjectsTable)) {
             if (file_exists($imagePath)) {
                 return "<img src='" . htmlspecialchars($imagePath) . "' alt='Project Image' style='max-width:200px; height:auto;'>";
             } else {
-                return "<img src='images/projects/default.png' alt='Default Project Image' style='max-width:200px; height:auto;'>";
+                return "<img src='hoi.jpg' alt='Default Project Image' style='max-width:200px; height:auto;'>";
             }
         }
     ?>

@@ -1,3 +1,56 @@
+<?php
+$uploadMessage = "";
+
+if (isset($_POST['submit'])) {
+    // text data
+    $caption = htmlspecialchars($_POST['caption']);
+
+    // foto data
+    $file = $_FILES['image'];
+    $fileName = $file['name'];
+    $fileTmpName = $file['tmp_name'];
+    $fileSize = $file['size'];
+    $fileError = $file['error'];
+
+    // de extensie van de file ophalen en kijken of hij is toegestaan
+    $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+    $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+
+    if (in_array($fileExt, $allowed)) {
+        if ($fileError === 0) {
+            // limiteer de file grootte tot 5MB
+            if ($fileSize < 5000000) {
+                // maak een unieke naam voor de file om fouten te voorkomen
+                $fileNameNew = uniqid('', true) . "." . $fileExt;
+                $fileDestination = 'uploads/' . $fileNameNew;
+
+                // creeër de uploads map als deze nog niet bestaat
+                if (!is_dir('uploads')) {
+                    mkdir('uploads', 0777, true);
+                }
+
+                // verplaats de file naar de uploads map
+                if (move_uploaded_file($fileTmpName, $fileDestination)) {
+                    $uploadMessage = "<div style='margin-top: 20px; padding: 10px; background: rgba(0,255,0,0.1); border-radius: 5px;'>
+                                        Upload success!<br>
+                                        Caption: " . $caption . "<br>
+                                        <img src='$fileDestination' width='200' style='margin-top: 10px; border-radius: 4px;'>
+                                      </div>";
+                } else {
+                    $uploadMessage = "<p style='color: red;'>Failed to move the uploaded file.</p>";
+                }
+            } else {
+                $uploadMessage = "<p style='color: red;'>Your file is too big!</p>";
+            }
+        } else {
+            $uploadMessage = "<p style='color: red;'>There was an error uploading your file!</p>";
+        }
+    } else {
+        $uploadMessage = "<p style='color: red;'>You cannot upload files of this type!</p>";
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -53,7 +106,7 @@
       );
     }
 
-     .dark-mode .mountains {
+    .dark-mode .mountains {
       background: linear-gradient(to top, #1E0A4A 0%, transparent 100%);
     }
 
@@ -166,6 +219,19 @@
 
   <main>
     <h1>Welkom op mijn portofolio!</h1>
+    
+    <p>Hier kunt u uw projecten uploaden en bekijken.</p>
+    <form action="" method="POST" enctype="multipart/form-data">
+      <label for="caption">Korte desciptie over jezelf:</label><br>
+      <input type="text" id="caption" name="caption" required><br><br>
+
+      <label for="image">Kies uw foto:</label><br>
+      <input type="file" id="image" name="image" accept="image/*" required><br><br>
+
+      <input type="submit" name="submit" value="Upload">
+    </form>
+
+    <?php echo $uploadMessage; ?>
   </main>
 
   <footer>
